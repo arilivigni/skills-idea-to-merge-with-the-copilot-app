@@ -1,0 +1,18 @@
+{
+  "name": "monas-bookmark-manager",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev --host --port 4321",
+    "start": "astro dev --host --port 4321",
+    "build": "astro build",
+    "preview": "astro preview --host --port 4321"
+  },
+  "dependencies": {
+    "astro": "^7.1.6"
+  }
+}

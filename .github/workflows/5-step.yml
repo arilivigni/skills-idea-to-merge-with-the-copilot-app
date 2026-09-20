@@ -1,0 +1,309 @@
+name: Step 5 # Last step of the exercise
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ROADMAP.md'
+  issues:
+    types:
+      - opened
+
+# Serialize Step 5 runs. Activity 2 opens two roadmap issues in quick succession,
+# which fires two `issues: opened` events. Without this, two runs could complete
+# at once — double-posting the review and racing to disable the workflow.
+concurrency:
+  group: step-5-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+env:
+  REVIEW_FILE: ".github/steps/x-review.md"
+
+jobs:
+  find_exercise:
+    name: Find Exercise Issue
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'issues' || github.event.created == false }}
+    uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@v0.9.3
+
+  # Guard against duplicate completion. Two roadmap issues can open near-
+  # simultaneously; combined with the concurrency lock above, this lets the
+  # first run disable the workflow and post the review, while any later run
+  # sees the workflow already disabled and skips the terminal check — so the
+  # review and finish steps run exactly once.
+  gate:
+    name: Gate concurrent runs
+    if: ${{ github.event_name == 'issues' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    outputs:
+      active: ${{ steps.state.outputs.active }}
+    steps:
+      - name: Check whether this workflow is still enabled
+        id: state
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          workflow_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.workflow_id')
+          state=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_id}" --jq '.state')
+          echo "Workflow state: $state"
+          if [ "$state" = "active" ]; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Activity 1 — roadmap landed on main. Interim feedback only; does not post the review.
+  check_roadmap:
+    name: Check roadmap
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    needs: [find_exercise]
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check roadmap was added
+        id: check-roadmap-exists
+        continue-on-error: true
+        run: |
+          if [ -f ROADMAP.md ]; then
+            echo "ROADMAP.md exists"
+            exit 0
+          else
+            echo "ROADMAP.md is missing"
+            exit 1
+          fi
+
+      - name: Check roadmap has real content
+        id: check-roadmap-content
+        continue-on-error: true
+        run: |
+          if [ -f ROADMAP.md ]; then
+            ITEMS=$(grep -cE '^[[:space:]]*[-*] ' ROADMAP.md || true)
+            echo "ROADMAP.md list items: $ITEMS"
+            if [ "$ITEMS" -ge 3 ]; then
+              echo "ROADMAP.md lists at least three items"
+              exit 0
+            else
+              echo "ROADMAP.md needs at least three list items"
+              exit 1
+            fi
+          else
+            echo "ROADMAP.md is missing"
+            exit 1
+          fi
+
+      - name: Update comment - activity 1 results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          edit-mode: replace
+          file: .github/templates/step-5-activity-1-results.md
+          vars: |
+            step_number: 5
+            results_table:
+              - description: "A ROADMAP.md was added to the repository root"
+                passed: ${{ steps.check-roadmap-exists.outcome == 'success' }}
+              - description: "The roadmap lists at least three items"
+                passed: ${{ steps.check-roadmap-content.outcome == 'success' }}
+
+      - name: Fail job if not all checks passed
+        if: contains(steps.*.outcome, 'failure')
+        run: exit 1
+
+  # Activity 2 — issues opened from the roadmap. Terminal check that gates the review.
+  check_step_work:
+    name: Check step work
+    needs: [find_exercise, gate]
+    if: ${{ (github.event_name == 'issues' || github.event_name == 'workflow_dispatch') && needs.gate.outputs.active == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check roadmap was added
+        id: check-roadmap-exists
+        continue-on-error: true
+        run: |
+          if [ -f ROADMAP.md ]; then
+            echo "ROADMAP.md exists"
+            exit 0
+          else
+            echo "ROADMAP.md is missing"
+            exit 1
+          fi
+
+      - name: Check roadmap has real content
+        id: check-roadmap-content
+        continue-on-error: true
+        run: |
+          if [ -f ROADMAP.md ]; then
+            ITEMS=$(grep -cE '^[[:space:]]*[-*] ' ROADMAP.md || true)
+            echo "ROADMAP.md list items: $ITEMS"
+            if [ "$ITEMS" -ge 3 ]; then
+              echo "ROADMAP.md lists at least three items"
+              exit 0
+            else
+              echo "ROADMAP.md needs at least three list items"
+              exit 1
+            fi
+          else
+            echo "ROADMAP.md is missing"
+            exit 1
+          fi
+
+      - name: Check two issues were opened from the roadmap
+        id: check-issues-count
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WALKTHROUGH_ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+        run: |
+          COUNT=$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --limit 100 \
+            --json number,body \
+            --jq "[.[] | select(.number != $WALKTHROUGH_ISSUE_NUMBER) | select((.body // \"\") | length > 20)] | length")
+          echo "Open non-walkthrough issues with a real body: ${COUNT:-0}"
+          if [ "${COUNT:-0}" -ge 2 ]; then
+            echo "At least two issues were opened from the roadmap"
+            exit 0
+          else
+            echo "Need at least two issues opened from the roadmap"
+            exit 1
+          fi
+
+      - name: Update comment - activity 2 results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          edit-mode: replace
+          file: .github/templates/step-5-activity-2-results.md
+          vars: |
+            step_number: 5
+            results_table:
+              - description: "A ROADMAP.md is on the default branch"
+                passed: ${{ steps.check-roadmap-exists.outcome == 'success' }}
+              - description: "The roadmap lists at least three items"
+                passed: ${{ steps.check-roadmap-content.outcome == 'success' }}
+              - description: "At least two issues were opened from the roadmap"
+                passed: ${{ steps.check-issues-count.outcome == 'success' }}
+
+      - name: Fail job if not all checks passed
+        if: contains(steps.*.outcome, 'failure')
+        run: exit 1
+
+  post_review_content:
+    name: Post review content
+    needs: [find_exercise, check_step_work]
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Create comment - review next
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/lesson-review.md
+
+      - name: Create comment - add review content
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: ${{ env.REVIEW_FILE }}
+
+      - name: Disable current workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          workflow_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.workflow_id')
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_id}/disable"
+
+  finish_exercise:
+    name: Finish Exercise
+    needs: [find_exercise, post_review_content]
+    uses: skills/exercise-toolkit/.github/workflows/finish-exercise.yml@v0.9.3
+    with:
+      issue-url: ${{ needs.find_exercise.outputs.issue-url }}
+      exercise-title: "Idea to Merge with the Copilot App"

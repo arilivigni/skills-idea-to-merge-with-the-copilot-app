@@ -1,0 +1,358 @@
+name: Step 3
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: read
+
+env:
+  STEP_4_FILE: ".github/steps/4-step.md"
+
+jobs:
+  find_exercise:
+    name: Find Exercise Issue
+    uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@v0.9.3
+
+  # Activity 1 — runs when the pull request is opened or updated (not on close)
+  check_build:
+    name: Check step work - build and PR
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.action != 'closed' }}
+    runs-on: ubuntu-latest
+    needs: [find_exercise]
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check bookmarks feature persists in the browser
+        id: check-persistence
+        continue-on-error: true
+        uses: skills/action-keyphrase-checker@v1
+        with:
+          text-file: src/components/Bookmarks.astro
+          keyphrase: localStorage
+
+      - name: Check pull request links the work item issue
+        id: check-linked-issue
+        continue-on-error: true
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Accept a plain closing keyword ("Closes #2" / "Closes .../issues/2")
+          # AND the Copilot App's rich reference, which rewrites the same text as
+          # a <copilot-ref ... target-id=".../issues/N"> chip. Without the chip
+          # branch this false-fails even though the learner linked the issue.
+          if echo "$PR_BODY" | grep -Eiq '(clos|fix|resolv)[a-z]*[[:space:]]+(<copilot-ref[[:space:]][^>]*)?(#[0-9]+|[^[:space:]"]*/issues/[0-9]+)'; then
+            echo "Pull request links an issue with a closing keyword."
+            exit 0
+          else
+            echo "Pull request does not link an issue with a closing keyword. In the PR body, add a closing reference to your bookmarks issue, e.g. 'Closes #2'."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        id: install
+        continue-on-error: true
+        run: npm ci
+
+      - name: Check the app builds
+        id: check-build
+        continue-on-error: true
+        run: npm run build
+
+      - name: Update comment - step results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          edit-mode: replace
+          file: .github/templates/step-3-activity-1-results.md
+          vars: |
+            step_number: 3
+            results_table:
+              - description: "Bookmarks feature persists in the browser (localStorage)"
+                passed: ${{ steps.check-persistence.outcome == 'success' }}
+              - description: "Pull request links the work item issue"
+                passed: ${{ steps.check-linked-issue.outcome == 'success' }}
+              - description: "The app builds successfully"
+                passed: ${{ steps.check-build.outcome == 'success' }}
+
+      - name: Fail job if not all checks passed
+        if: contains(steps.*.outcome, 'failure')
+        run: exit 1
+
+  # Activity 2 — runs only when the pull request is merged
+  check_merge:
+    name: Check step work - review and merge
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    needs: [find_exercise]
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout the merged main branch
+        uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check the pull request was merged
+        id: check-merged
+        continue-on-error: true
+        env:
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+        run: |
+          if [ "$PR_MERGED" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Pull request was merged"
+            exit 0
+          else
+            echo "Pull request was closed without merging"
+            exit 1
+          fi
+
+      - name: Close and confirm the merged pull request's linked work item issue
+        id: check-issue-closed
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          WALKTHROUGH_ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No pull request in context (manual dispatch); skipping linked-issue check."
+            exit 0
+          fi
+
+          # This job only runs once the pull request is MERGED, so reaching here
+          # means the work shipped. Now make sure the linked work item issue is
+          # resolved.
+          #
+          # We cannot rely on GitHub's native "Closes #N" auto-close: the Copilot
+          # App rewrites the closing keyword in the PR body as a
+          # <copilot-ref ... target-id=".../issues/N"> chip, which GitHub does
+          # NOT parse as a closing keyword — so closingIssuesReferences stays
+          # empty and merging never auto-closes the issue. We therefore discover
+          # the referenced issue(s) ourselves and close them on merge, which is
+          # both reliable and idempotent (a no-op if already closed).
+          collect_candidates() {
+            # Source 1: GitHub's own closing refs (present only for plain-text keywords).
+            gh api graphql \
+              -f query='query($owner:String!,$repo:String!,$pr:Int!){
+                repository(owner:$owner,name:$repo){
+                  pullRequest(number:$pr){
+                    closingIssuesReferences(first:20){ nodes { number } }
+                  }
+                }
+              }' \
+              -f owner="$OWNER" \
+              -f repo="$REPO_NAME" \
+              -F pr="$PR_NUMBER" \
+              --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[].number' \
+              2>/dev/null || true
+
+            # Source 2: issue numbers in the PR body — bare #N and .../issues/N,
+            # which also covers the app's <copilot-ref target-id=".../issues/N"> chip.
+            gh api "repos/$OWNER/$REPO_NAME/pulls/$PR_NUMBER" --jq '.body // ""' 2>/dev/null \
+              | grep -oiE '(#[0-9]+|/issues/[0-9]+)' \
+              | grep -oE '[0-9]+' || true
+          }
+
+          CANDIDATES=$(collect_candidates | sort -un | grep -vx "$WALKTHROUGH_ISSUE_NUMBER" || true)
+
+          if [ -z "$CANDIDATES" ]; then
+            echo "The merged pull request does not reference a work item issue. In the pull request body, reference your bookmarks issue with a closing keyword (e.g. 'Closes #<app-issue-number>') pointing at that issue, not the walkthrough issue."
+            exit 1
+          fi
+
+          # Close every referenced (non-walkthrough) issue, then confirm.
+          CLOSED_LINKED=0
+          for num in $CANDIDATES; do
+            STATE=$(gh api "repos/$OWNER/$REPO_NAME/issues/$num" --jq '.state' 2>/dev/null || echo "")
+            if [ "$STATE" = "open" ]; then
+              echo "Closing linked work item issue #$num (the app's issue chip prevents GitHub auto-close on merge)."
+              gh api -X PATCH "repos/$OWNER/$REPO_NAME/issues/$num" -f state=closed -f state_reason=completed >/dev/null 2>&1 || true
+              STATE=$(gh api "repos/$OWNER/$REPO_NAME/issues/$num" --jq '.state' 2>/dev/null || echo "")
+            fi
+            if [ "$STATE" = "closed" ]; then
+              echo "Linked work item issue #$num is closed."
+              CLOSED_LINKED=1
+            fi
+          done
+
+          if [ "$CLOSED_LINKED" -ge 1 ]; then
+            echo "The merged pull request's linked work item issue is closed."
+            exit 0
+          else
+            echo "Could not close the linked work item issue. Confirm the PR body references your bookmarks issue and try closing it manually."
+            exit 1
+          fi
+
+      - name: Check the merged app persists bookmarks in the browser
+        id: check-persistence-main
+        continue-on-error: true
+        uses: skills/action-keyphrase-checker@v1
+        with:
+          text-file: src/components/Bookmarks.astro
+          keyphrase: localStorage
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        id: install-main
+        continue-on-error: true
+        run: npm ci
+
+      - name: Check the merged app still builds on main
+        id: check-build-main
+        continue-on-error: true
+        run: npm run build
+
+      - name: Update comment - step results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          edit-mode: replace
+          file: exercise-toolkit/markdown-templates/step-feedback/step-results-table.md
+          vars: |
+            step_number: 3
+            results_table:
+              - description: "The pull request was merged into main"
+                passed: ${{ steps.check-merged.outcome == 'success' }}
+              - description: "The merged PR closed its linked work item issue"
+                passed: ${{ steps.check-issue-closed.outcome == 'success' }}
+              - description: "Bookmarks feature persists in the browser (localStorage)"
+                passed: ${{ steps.check-persistence-main.outcome == 'success' }}
+              - description: "The merged app still builds on main"
+                passed: ${{ steps.check-build-main.outcome == 'success' }}
+
+      - name: Fail job if not all checks passed
+        if: contains(steps.*.outcome, 'failure')
+        run: exit 1
+
+  post_next_step_content:
+    name: Post next step content
+    needs: [find_exercise, check_merge]
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Get response templates
+        uses: actions/checkout@v5
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.9.3
+
+      - name: Create comment - step finished
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/step-finished-prepare-next-step.md
+          vars: |
+            next_step_number: 4
+
+      - name: Create comment - add step content
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: ${{ env.STEP_4_FILE }}
+
+      - name: Create comment - watching for progress
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
+
+      - name: Disable current workflow and enable next one
+        run: |
+          gh workflow disable "${{github.workflow}}"
+          gh workflow enable "Step 4"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

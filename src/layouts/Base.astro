@@ -1,0 +1,162 @@
+---
+const { title = "Mona's Bookmark Manager App" } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <style>
+      /* Monaspace webfonts (GitHub Next, SIL OFL 1.1) self-hosted from /public/fonts.
+         Neon carries body text; Xenon gives headings a touch of contrast.
+         Self-hosting keeps the app fully offline-capable — no runtime CDN needed;
+         the ui-monospace fallback still covers any load failure. */
+      @font-face {
+        font-family: 'Monaspace Neon';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/MonaspaceNeon-400.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Monaspace Neon';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('/fonts/MonaspaceNeon-600.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Monaspace Neon';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('/fonts/MonaspaceNeon-700.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Monaspace Xenon';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('/fonts/MonaspaceXenon-600.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Monaspace Xenon';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('/fonts/MonaspaceXenon-700.woff2') format('woff2');
+      }
+      :root {
+        color-scheme: light dark;
+        --accent: #3b82f6;
+        --border: #8883;
+        --muted: color-mix(in srgb, currentColor 60%, transparent);
+        --radius: 0.6rem;
+        --font-body: 'Monaspace Neon', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+        --font-head: 'Monaspace Xenon', 'Monaspace Neon', ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: var(--font-body);
+        line-height: 1.5;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 4rem;
+      }
+      header { margin-bottom: 1.5rem; }
+      h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-family: var(--font-head); letter-spacing: -0.01em; }
+      .tagline { margin: 0; color: var(--muted); }
+
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: end;
+        margin: 1.5rem 0 0.5rem;
+      }
+      .field { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 16rem; }
+      label { font-size: 0.85rem; font-weight: 600; }
+      input {
+        padding: 0.6rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font: inherit;
+        background: transparent;
+        color: inherit;
+      }
+      input:focus-visible,
+      button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      button {
+        padding: 0.6rem 1rem;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover { filter: brightness(1.05); }
+      .hint { margin: 0 0 1.5rem; font-size: 0.8rem; color: var(--muted); }
+
+      #list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin: 0.5rem 0;
+      }
+      .list-title { margin: 0; font-size: 1rem; font-family: var(--font-head); }
+      .clear {
+        background: transparent;
+        color: inherit;
+        border: 1px solid var(--border);
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+      .clear:hover { border-color: currentColor; }
+
+      ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+      li.bookmark {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+        padding: 0.75rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+      .bookmark .url { flex: 1 1 12rem; overflow-wrap: anywhere; }
+      .bookmark .slug {
+        font-family: ui-monospace, "SF Mono", monospace;
+        font-size: 0.85rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 18%, transparent);
+      }
+      .bookmark .copy {
+        background: transparent;
+        color: inherit;
+        border: 1px solid var(--border);
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+      .empty {
+        margin: 0;
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--muted);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+      }
+
+      footer { margin-top: 2.5rem; font-size: 0.8rem; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
