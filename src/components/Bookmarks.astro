@@ -1,13 +1,14 @@
 ---
-// Bookmarks component (scaffold).
+// Bookmarks component.
 //
-// The markup below renders during the static build. The dynamic behavior —
+// The markup below renders during the static build. All dynamic behavior —
 // adding a bookmark, generating a short slug, and persisting to the browser —
-// must run ONLY in the client-side <script> boundary at the bottom of this
-// file. Astro runs that script in the browser, never during the build, so
-// browser-only APIs are safe there.
+// runs ONLY in the client-side script boundary at the bottom of this file.
+// Astro runs that script in the browser, never during the build, so
+// browser-only APIs such as localStorage are safe there.
 //
-// You will implement the behavior in Step 3.
+// Pure, testable helpers live in src/lib/bookmarks.ts; they touch neither the
+// DOM nor browser storage.
 ---
 <form id="add-bookmark">
   <div class="field">
@@ -28,6 +29,8 @@
 
 <p class="hint">Paste a URL and select <strong>Add bookmark</strong> to generate its short <code>mona-</code> slug.</p>
 
+<p id="form-error" class="error" role="alert" hidden></p>
+
 <p id="empty-state" class="empty">No bookmarks yet — add your first link above.</p>
 
 <div id="list-header" hidden>
@@ -39,32 +42,250 @@
   <!-- Bookmarks render here in the browser. -->
 </ul>
 
+
 <script>
   // CLIENT-SIDE BOUNDARY — runs in the browser only.
   //
-  // TODO (Step 3): implement the bookmarks feature here.
-  //   1. On form submit, call event.preventDefault() FIRST so the page
-  //      never reloads, then read and validate the original URL.
-  //   2. Generate a short slug with a "mona-" prefix (for example, base62
-  //      of a counter or hash → "mona-7fk2").
-  //   3. Save the original URL and its slug, then persist them in the browser.
-  //   4. Render each saved bookmark into #bookmark-list as a row (li.bookmark) with:
-  //        - the original URL as a link (.url) that opens in a new tab,
-  //        - its short slug shown as a badge (.slug), and
-  //        - a "Copy" button (.copy) that copies the slug.
-  //   5. Toggle empty vs. saved state: hide #empty-state and show #list-header
-  //      (the "Saved bookmarks" heading + "Clear all" button) once at least one
-  //      bookmark exists; reverse it when the list is empty.
-  //   6. Wire the #clear-all button to remove every saved bookmark (clear the
-  //      list, clear browser storage) after a quick confirm.
-  //   7. On page load, read the saved bookmarks from storage and render
-  //      them so the list persists across reloads.
-  //
-  // Because this code lives in a client <script>, browser storage APIs are
-  // safe to use here without breaking the static build.
-  const form = document.getElementById('add-bookmark');
+  // Because this code lives in a client script, browser storage APIs are safe
+  // to use here without breaking the static build. The pure helpers imported
+  // below live in src/lib/bookmarks.ts and are covered by unit tests.
+  import {
+    COUNTER_KEY,
+    SEPARATOR,
+    STORAGE_KEY,
+    createSlug,
+    normalizeUrl,
+    parseBookmarks,
+    parseCounter,
+    serializeBookmarks,
+    type Bookmark,
+  } from '../lib/bookmarks';
+
+  const form = document.getElementById('add-bookmark') as HTMLFormElement | null;
+  const input = document.getElementById('url') as HTMLInputElement | null;
+  const list = document.getElementById('bookmark-list');
+  const emptyState = document.getElementById('empty-state');
+  const listHeader = document.getElementById('list-header');
+  const clearAll = document.getElementById('clear-all');
+  const errorBox = document.getElementById('form-error');
+
+  let bookmarks: Bookmark[] = [];
+  let counter = 0;
+
+  /** localStorage can throw (private mode, blocked storage) — never let it. */
+  function readStorage(key: string): string | null {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeStorage(key: string, value: string): void {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      /* Storage is unavailable; the in-memory list still works this session. */
+    }
+  }
+
+  function removeStorage(key: string): void {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      /* Nothing else to do. */
+    }
+  }
+
+  function save(): void {
+    writeStorage(STORAGE_KEY, serializeBookmarks(bookmarks));
+    writeStorage(COUNTER_KEY, String(counter));
+  }
+
+  function showError(message: string): void {
+    if (!errorBox) return;
+    errorBox.textContent = message;
+    errorBox.hidden = message === '';
+  }
+
+  async function copySlug(slug: string, button: HTMLButtonElement): Promise<void> {
+    const original = button.dataset.label ?? 'Copy';
+    try {
+      await navigator.clipboard.writeText(slug);
+      button.textContent = 'Copied!';
+    } catch {
+      button.textContent = slug;
+    }
+    window.setTimeout(() => {
+      button.textContent = original;
+    }, 1200);
+  }
+
+  function render(): void {
+    if (!list) return;
+
+    list.textContent = '';
+
+    for (const bookmark of bookmarks) {
+      const item = document.createElement('li');
+      item.className = 'bookmark';
+
+      const entry = document.createElement('span');
+      entry.className = 'entry';
+
+      const link = document.createElement('a');
+      link.className = 'url';
+      link.href = bookmark.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = bookmark.url;
+
+      const separator = document.createElement('span');
+      separator.className = 'sep';
+      separator.textContent = SEPARATOR;
+
+      const slug = document.createElement('span');
+      slug.className = 'slug';
+      slug.textContent = bookmark.slug;
+
+      entry.append(link, separator, slug);
+
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'copy';
+      copy.dataset.label = 'Copy';
+      copy.textContent = 'Copy';
+      copy.setAttribute('aria-label', `Copy slug ${bookmark.slug}`);
+      copy.addEventListener('click', () => {
+        void copySlug(bookmark.slug, copy);
+      });
+
+      item.append(entry, copy);
+      list.append(item);
+    }
+
+    const hasBookmarks = bookmarks.length > 0;
+    if (emptyState) emptyState.hidden = hasBookmarks;
+    if (listHeader) listHeader.hidden = !hasBookmarks;
+  }
+
+  function addBookmark(rawValue: string): void {
+    const url = normalizeUrl(rawValue);
+    if (!url) {
+      showError('That does not look like a link. Try something like example.com.');
+      input?.focus();
+      return;
+    }
+
+    const existing = bookmarks.find((bookmark) => bookmark.url === url);
+    if (existing) {
+      showError(`Already saved as ${existing.slug}.`);
+      form?.reset();
+      return;
+    }
+
+    const next = createSlug(bookmarks, counter);
+    counter = next.counter;
+    bookmarks = [...bookmarks, { url, slug: next.slug }];
+
+    save();
+    render();
+    showError('');
+    form?.reset();
+    input?.focus();
+  }
+
   form?.addEventListener('submit', (event) => {
     event.preventDefault(); // keep this — stops the page from reloading
-    // Implement in Step 3.
+    try {
+      addBookmark(input?.value ?? '');
+    } catch {
+      showError('Something went wrong saving that bookmark. Please try again.');
+    }
   });
+
+  clearAll?.addEventListener('click', () => {
+    if (bookmarks.length === 0) return;
+    if (!window.confirm('Remove every saved bookmark?')) return;
+
+    bookmarks = [];
+    counter = 0;
+    removeStorage(STORAGE_KEY);
+    removeStorage(COUNTER_KEY);
+    render();
+    showError('');
+  });
+
+  // Restore whatever survived the last visit. Storage is untrusted, so the
+  // parser drops anything malformed instead of throwing.
+  bookmarks = parseBookmarks(readStorage(STORAGE_KEY));
+  counter = Math.max(parseCounter(readStorage(COUNTER_KEY)), bookmarks.length);
+  render();
 </script>
+
+<style is:global>
+  /* Rows are built in the browser, so they cannot rely on Astro's scoped class
+     hashing. Fonts reuse the --font-body / --font-head variables already
+     defined in src/layouts/Base.astro. */
+  #add-bookmark {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, currentColor 4%, transparent);
+  }
+
+  #form-error {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, #ef4444 45%, transparent);
+    background: color-mix(in srgb, #ef4444 12%, transparent);
+  }
+
+  #bookmark-list li.bookmark {
+    background: color-mix(in srgb, currentColor 4%, transparent);
+    transition: border-color 120ms ease, transform 120ms ease;
+  }
+
+  #bookmark-list li.bookmark:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: translateY(-1px);
+  }
+
+  #bookmark-list li.bookmark .entry {
+    display: flex;
+    flex: 1 1 18rem;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 0;
+  }
+
+  #bookmark-list li.bookmark .entry .url {
+    flex: 0 1 auto;
+    color: inherit;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    overflow-wrap: anywhere;
+  }
+
+  #bookmark-list li.bookmark .entry .url:hover {
+    color: var(--accent);
+  }
+
+  #bookmark-list li.bookmark .entry .sep {
+    white-space: pre;
+    color: var(--muted);
+  }
+
+  #bookmark-list li.bookmark .entry .slug {
+    font-family: var(--font-head);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  #bookmark-list li.bookmark .copy:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>

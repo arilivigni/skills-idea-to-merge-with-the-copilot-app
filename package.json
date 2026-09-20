@@ -10,7 +10,8 @@
     "dev": "astro dev --host --port 4321",
     "start": "astro dev --host --port 4321",
     "build": "astro build",
-    "preview": "astro preview --host --port 4321"
+    "preview": "astro preview --host --port 4321",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
   },
   "dependencies": {
     "astro": "^7.1.6"
