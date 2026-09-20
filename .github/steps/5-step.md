@@ -27,11 +27,11 @@ Let Copilot draft the next-release plan in an editor canvas, then use **agent me
 > [!TIP]
 > You can reopen these step instructions anytime: in your session, reference the **Exercise: Idea to Merge with the Copilot App** issue (that's the walkthrough issue **#1** from your first session) to bring it back into the side panel.
 >
-> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="../images/step1-reopen-issue.png" />
+> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-reopen-issue.png?raw=true" />
 
 1. Start a **New session** on your repository — click **New session** in the top-right of the session panel, next to the repository name.
 
-   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="../images/new-session.png" />
+   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/new-session.png?raw=true" />
 1. In the new session, ask Copilot to draft the roadmap and open it in an **editor canvas** so you can review it as it writes:
 
    > ![Static Badge](https://img.shields.io/badge/Prompt-text?style=for-the-badge&logo=github-copilot&logoColor=white&labelColor=purple&color=purple)
@@ -111,18 +111,18 @@ Let Copilot draft the next-release plan in an editor canvas, then use **agent me
 
    Agent merge opens and merges the pull request for you. When the toggle is on and the action shows **Ready to merge**, the roadmap lands on `main` automatically — no manual merge needed.
 
-   <img width="440" alt="Session showing Agent merge landing ROADMAP.md on main — the pull request opened and merged automatically" src="../images/ghcp-app-agent-merge.png" />
+   <img width="440" alt="Session showing Agent merge landing ROADMAP.md on main — the pull request opened and merged automatically" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-agent-merge.png?raw=true" />
 
    <details>
    <summary>Where to find these controls 👀</summary><br/>
 
    The action button shows **Ready to merge** when agent merge is armed:
 
-   <img width="420" alt="Session action button showing 'Ready to merge' with the Agent merge toggle, ready to land ROADMAP.md on main" src="../images/ghcp-app-ready-to-merge.png" />
+   <img width="420" alt="Session action button showing 'Ready to merge' with the Agent merge toggle, ready to land ROADMAP.md on main" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-ready-to-merge.png?raw=true" />
 
    Open the dropdown to confirm **Agent merge** is enabled and allowed to merge the pull request:
 
-   <img width="440" alt="Session action dropdown with Agent merge enabled — the toggle on and 'Allow the agent to' listing Address reviews, Fix CI failures, Resolve conflicts, and Merge pull request" src="../images/ghcp-app-allow-agent-merge.png" />
+   <img width="440" alt="Session action dropdown with Agent merge enabled — the toggle on and 'Allow the agent to' listing Address reviews, Fix CI failures, Resolve conflicts, and Merge pull request" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-allow-agent-merge.png?raw=true" />
 
    </details>
 

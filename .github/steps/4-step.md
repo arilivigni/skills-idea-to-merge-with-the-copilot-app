@@ -32,14 +32,14 @@ See the finished bookmarks app running live — right inside the Copilot App —
 > [!TIP]
 > You can reopen these step instructions anytime: in your session, reference the **Exercise: Idea to Merge with the Copilot App** issue (that's the walkthrough issue **#1** from your first session) to bring it back into the side panel.
 >
-> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="../images/step1-reopen-issue.png" />
+> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-reopen-issue.png?raw=true" />
 
 > [!NOTE]
 > This preview is **app-only** and isn't graded — it stands up the running app you'll capture and submit in Activity 2. Leave the dev server running so both the browser canvas and Playwright can reach it.
 
 1. Go back to your **Build the bookmarks app** session from Step 3 — the one that shipped the feature. Open its session panel menu and select **Build the bookmarks app** to bring it back into the side panel:
 
-   <img width="360" alt="Session panel menu with the Build the bookmarks app issue selected to reopen the session that built the feature" src="../images/step3-reopen-issue.png" />
+   <img width="360" alt="Session panel menu with the Build the bookmarks app issue selected to reopen the session that built the feature" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step3-reopen-issue.png?raw=true" />
 
    In that session, open a **Terminal canvas**, install dependencies (first run only), and start the dev server. Leave it running and note the local URL (for example, `http://localhost:4321`):
 
@@ -52,7 +52,7 @@ See the finished bookmarks app running live — right inside the Copilot App —
 
 1. Open a **browser canvas** on that URL to see the app running in the right side panel. The quickest way: in the **Terminal canvas**, **⌘+Click** (macOS) or **Ctrl+Click** (Windows/Linux) the local URL to open it directly in a browser canvas.
 
-   <img width="480" alt="Terminal canvas with the dev server running; a callout on the local URL reads 'macOS: CMD+Click, Windows/Linux: CTRL+Click' to open it in a browser canvas" src="../images/ghcp-app-terminal-running-app.png" />
+   <img width="480" alt="Terminal canvas with the dev server running; a callout on the local URL reads 'macOS: CMD+Click, Windows/Linux: CTRL+Click' to open it in a browser canvas" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-terminal-running-app.png?raw=true" />
 
    Prefer a prompt? You can also ask Copilot:
 
@@ -64,7 +64,7 @@ See the finished bookmarks app running live — right inside the Copilot App —
 
 1. In the browser canvas, **add a bookmark** — paste a link (for example, `https://github.com/features/copilot`) and select **Add bookmark**. Confirm both the **original URL** and its generated **short slug** appear in the saved list. That's the app you took from idea to merge, running live.
 
-   <img width="460" alt="Browser canvas at localhost:4322 showing Mona's Bookmark Manager App with a saved bookmark rendered as https://learn.github.com/skills :: mona-1 and a Copy button" src="../images/ghcp-app-mona-bookmark-mngr-app.png" />
+   <img width="460" alt="Browser canvas at localhost:4322 showing Mona's Bookmark Manager App with a saved bookmark rendered as https://learn.github.com/skills :: mona-1 and a Copy button" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-mona-bookmark-mngr-app.png?raw=true" />
 
 ### ⌨️ Activity 2: Capture proof with Playwright MCP and submit
 

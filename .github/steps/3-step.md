@@ -29,14 +29,14 @@ A few things to know about the build:
 > [!TIP]
 > You can reopen these step instructions anytime: in your session, reference the **Exercise: Idea to Merge with the Copilot App** issue (that's the walkthrough issue **#1** from your first session) to bring it back into the side panel.
 >
-> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="../images/step1-reopen-issue.png" />
+> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-reopen-issue.png?raw=true" />
 
 1. Start a **new session** for this feature. Click **New session** in the top-right of the session panel, next to the repository name — a fresh session branches from the current `main`, so it carries your Step 2 instructions.
 
-   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="../images/new-session.png" />
+   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/new-session.png?raw=true" />
 1. In the new session, open your **Build the bookmarks app** issue: type `#2` in the prompt field and press **Tab** to attach it as context for the build.
 
-   <img width="460" alt="The Build the bookmarks app issue #2 highlighted above the prompt field, ready to reference in the session" src="../images/step3-open-issue.png" />
+   <img width="460" alt="The Build the bookmarks app issue #2 highlighted above the prompt field, ready to reference in the session" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step3-open-issue.png?raw=true" />
 1. Send the build prompt below. It implements the feature and opens a pull request that links issue **#2** with a closing keyword, then walks you through the diff and **stops — leaving the merge to you**:
 
    > ![Static Badge](https://img.shields.io/badge/Prompt-text?style=for-the-badge&logo=github-copilot&logoColor=white&labelColor=purple&color=purple)
@@ -95,31 +95,31 @@ A few things to know about the build:
    >   Agent merge.
    > ```
 
-   <img width="360" alt="The build prompt in the session with the Build the bookmarks app issue #2 referenced as a chip" src="../images/step3-issue-prompt.png" />
+   <img width="360" alt="The build prompt in the session with the Build the bookmarks app issue #2 referenced as a chip" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step3-issue-prompt.png?raw=true" />
 1. **Watch the agent test the implementation.** Building the feature includes verifying it — Copilot runs the **unit tests** you asked for and the **production build**, all headless: no browser opens and the Playwright MCP server stays idle. The tests cover URL normalisation, corrupted-storage recovery, and the exact `" :: "` formatting, while the build proves `localStorage` stays behind the `client:load` boundary. You'll preview the app live and drive it with Playwright in **Step 4** — here the tests and build are enough to trust the diff before you merge.
 
    **Agent merge usually happens automatically.** The agent opens the pull request for you via **agent merge**, so you may never open the action dropdown — the view below is optional. If no pull request appears (or you'd rather trigger it yourself), open the session's action dropdown and select **Agent merge**:
 
-   <img width="380" alt="Session action dropdown with Agent merge selected — 'Automate your pull request lifecycle' — above Create PR and Create draft PR" src="../images/ghcp-app-agent-merge.png" />
+   <img width="380" alt="Session action dropdown with Agent merge selected — 'Automate your pull request lifecycle' — above Create PR and Create draft PR" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-agent-merge.png?raw=true" />
 1. **Review the diff before you merge.** Agent merge opens the pull request that links issue **#2** for you — review the changes in the session's **Changes** tab (or a browser canvas on the PR). You'll merge it in **Activity 2** once you're satisfied.
 
-   <img width="440" alt="Session review of the base62 nextSlug helper (mona- prefixed slugs), persistence and event-wiring notes, with Changes +107 -21 and PR #4 buttons at the bottom" src="../images/ghcp-app-step3.png" />
+   <img width="440" alt="Session review of the base62 nextSlug helper (mona- prefixed slugs), persistence and event-wiring notes, with Changes +107 -21 and PR #4 buttons at the bottom" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-step3.png?raw=true" />
 
    <details>
    <summary>Walk the diff before you merge 👀</summary><br/>
 
    The session keeps the **Changes** diff and the review walkthrough a click apart, so you can read the code before merging in Activity 2.
 
-   <img width="460" alt="Session Changes tab: src/components/Bookmarks.astro diff replacing the TODO scaffold with STORAGE_KEY and COUNTER_KEY constants and the mona- slug logic (+107 -21)" src="../images/ghcp-app-step3-changes.png" />
+   <img width="460" alt="Session Changes tab: src/components/Bookmarks.astro diff replacing the TODO scaffold with STORAGE_KEY and COUNTER_KEY constants and the mona- slug logic (+107 -21)" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-step3-changes.png?raw=true" />
 
-   <img width="460" alt="Session PR #4 tab: open pull request 'Implement bookmarks feature with base62 mona- slugs' that Closes #2, branching arilivigni-automatic-doodle into main with a +107 -21 change" src="../images/ghcp-app-step3-pr.png" />
+   <img width="460" alt="Session PR #4 tab: open pull request 'Implement bookmarks feature with base62 mona- slugs' that Closes #2, branching arilivigni-automatic-doodle into main with a +107 -21 change" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-step3-pr.png?raw=true" />
 
    </details>
 
 > [!TIP]
 > Need to get back to your **Build the bookmarks app** issue (**#2**)? Open the session panel menu and select it to reopen it in the side panel anytime.
 
-<img width="360" alt="Session panel menu with the Build the bookmarks app issue selected to reopen it in the side panel" src="../images/step3-reopen-issue.png" />
+<img width="360" alt="Session panel menu with the Build the bookmarks app issue selected to reopen it in the side panel" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step3-reopen-issue.png?raw=true" />
 
 <details>
 <summary>Having trouble? 🤷</summary><br/>

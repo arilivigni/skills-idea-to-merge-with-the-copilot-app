@@ -26,18 +26,18 @@ Even a light, single-file change is a chance to try **agent merge** — the app'
 > [!TIP]
 > You can reopen these step instructions anytime: in your session, reference the **Exercise: Idea to Merge with the Copilot App** issue (that's the walkthrough issue **#1** from your first session) to bring it back into the side panel.
 >
-> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="../images/step1-reopen-issue.png" />
+> <img width="360" alt="Session panel menu listing the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-reopen-issue.png?raw=true" />
 
 > [!NOTE]
 > This is a **light, single-file edit** made in a session — you'll prompt the agent to update the file, then use **agent merge** to open a pull request. You'll review it and merge it in **Activity 2**.
 
 1. Open a **New session** on your repository — click **New session** in the top-right of the session panel, next to the repository name.
 
-   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="../images/new-session.png" />
+   <img width="420" alt="The New session button highlighted in the top-right of the session panel, next to the repository name" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/new-session.png?raw=true" />
 
 1. Switch the session to **Plan** mode from the mode dropdown below the prompt field, so the agent drafts its edit for you to approve before it runs.
 
-   <img width="480" alt="The session mode dropdown with Plan selected — 'Plan first, execute when ready'" src="../images/step2-plan-mode.png" />
+   <img width="480" alt="The session mode dropdown with Plan selected — 'Plan first, execute when ready'" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step2-plan-mode.png?raw=true" />
 
 1. **Prompt the agent to update `.github/copilot-instructions.md`** — replace the seeded `TODO` placeholder with the two project rules:
 
@@ -51,26 +51,26 @@ Even a light, single-file change is a chance to try **agent merge** — the app'
 
 1. **Approve the plan and let autopilot make the changes.** When the plan summary appears, select **Approve and implement with autopilot (recommended)**. Autopilot applies the single-file edit and opens a pull request for you. You'll review it and merge it in **Activity 2**.
 
-   <img width="520" alt="Plan summary in Plan mode with 'Approve and implement with autopilot (recommended)' highlighted as the first option" src="../images/ghcp-app-autopilot.png" />
+   <img width="520" alt="Plan summary in Plan mode with 'Approve and implement with autopilot (recommended)' highlighted as the first option" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-autopilot.png?raw=true" />
 
    **Agent merge usually happens automatically.** Autopilot typically opens the pull request for you via **agent merge**, so you may never open the action dropdown — the view below is optional. If no pull request appears (or you'd rather trigger it yourself), open the session's action dropdown and select **Agent merge**:
 
-   <img width="380" alt="Session action dropdown with Agent merge selected — 'Automate your pull request lifecycle' — above Create PR and Create draft PR" src="../images/ghcp-app-agent-merge.png" />
+   <img width="380" alt="Session action dropdown with Agent merge selected — 'Automate your pull request lifecycle' — above Create PR and Create draft PR" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-agent-merge.png?raw=true" />
 
    Autopilot then opens the pull request for you:
 
-   <img width="460" alt="Autopilot result: a pull request created via agent merge, showing the branch into main, a +2 -7 change, PR #3, and Plan complete" src="../images/ghcp-app-autopilot-result.png" />
+   <img width="460" alt="Autopilot result: a pull request created via agent merge, showing the branch into main, a +2 -7 change, PR #3, and Plan complete" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-autopilot-result.png?raw=true" />
 
    <details>
    <summary>Explore what autopilot produced 👀</summary><br/>
 
    Autopilot leaves the session open with tabs you can explore: the **Plan** it followed, the **Changes** diff, and the resulting **pull request**.
 
-   <img width="460" alt="Session Plan tab: 'Update copilot-instructions.md persistence rules' with the problem, approach, and a todo item" src="../images/ghcp-app-plan.png" />
+   <img width="460" alt="Session Plan tab: 'Update copilot-instructions.md persistence rules' with the problem, approach, and a todo item" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-plan.png?raw=true" />
 
-   <img width="460" alt="Session Changes tab: copilot-instructions.md diff with the TODO block removed and the localStorage and client:load rules added (+2 -7)" src="../images/ghcp-app-changes.png" />
+   <img width="460" alt="Session Changes tab: copilot-instructions.md diff with the TODO block removed and the localStorage and client:load rules added (+2 -7)" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-changes.png?raw=true" />
 
-   <img width="460" alt="Session PR #3 tab: open pull request 'docs: add persistence and hydration rules to copilot instructions' targeting main" src="../images/ghcp-app-pr.png" />
+   <img width="460" alt="Session PR #3 tab: open pull request 'docs: add persistence and hydration rules to copilot instructions' targeting main" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/ghcp-app-pr.png?raw=true" />
 
    </details>
 

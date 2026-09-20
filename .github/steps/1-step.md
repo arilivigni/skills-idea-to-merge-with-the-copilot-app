@@ -45,17 +45,17 @@ To use the GitHub Copilot app, the first step — as you might imagine — is to
 
 1. In a browser, open the landing page for the GitHub Copilot app: **https://github.com/features/ai/github-app**. *(This download page is the only step outside the app — everything after install happens inside the Copilot App.)*
 
-   <img width="520" alt="GitHub Copilot app download page with platform options" src="../images/step1-app-download-page.png" />
+   <img width="520" alt="GitHub Copilot app download page with platform options" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-app-download-page.png?raw=true" />
 
 1. Download the app for your platform and install it, following the steps in [Getting started with the Copilot App](https://docs.github.com/en/copilot/how-tos/github-copilot-app/getting-started) — the source of truth for installing and signing in.
 
-   <img width="480" alt="Downloading and installing the GitHub Copilot app" src="../images/step1-app-download.gif" />
+   <img width="480" alt="Downloading and installing the GitHub Copilot app" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-app-download.gif?raw=true" />
 
 1. Open the app once it's installed.
 1. Select **Sign in to GitHub** and follow the prompts to authenticate.
 1. After authenticating, add your exercise repository. Click the **+** next to **Sessions**, then choose **Repository URL…**.
 
-   <img width="320" alt="Add project menu in the Copilot App with Repository URL highlighted" src="../images/step1-add-repo-url.png" />
+   <img width="320" alt="Add project menu in the Copilot App with Repository URL highlighted" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-add-repo-url.png?raw=true" />
 
 1. Paste the clone URL for the repository you just created — copy it from the block below — then pick your GitHub account and select **Clone**.
 
@@ -63,24 +63,24 @@ To use the GitHub Copilot app, the first step — as you might imagine — is to
    https://github.com/{{full_repo_name}}
    ```
 
-   <img width="420" alt="Clone repository dialog with the exercise repository URL entered" src="../images/step1-clone-repo-url.png" />
+   <img width="420" alt="Clone repository dialog with the exercise repository URL entered" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-clone-repo-url.png?raw=true" />
 
 1. **Open the walkthrough issue as a reference — don't build it.** The exercise issue (**#1**) appears above the prompt field; click it (**Click to open**) to open it in the **side panel** for reading. This only *displays* the issue — nothing runs, so the session won't start planning or building.
 
    **Don't use _Create session from issue_ on #1.** That tells the app to *build* the issue — which is why it jumps straight into Plan mode and starts working. Issue **#1** is your **guide to read**. In **Step 3** you'll build the app issue (**#2**) — there you'll reference it in a dedicated session (type `#2` and press **Tab**) so the agent has it as context without auto-running.
 
-   <img width="460" alt="The exercise issue #1 shown above the prompt field with a 'Click to open' callout" src="../images/step1-open-issue.png" />
+   <img width="460" alt="The exercise issue #1 shown above the prompt field with a 'Click to open' callout" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-open-issue.png?raw=true" />
 
 1. With issue **#1** open in the side panel, click **New session** in the panel's top-right to get a fresh session for the work in Activity 2.
 
-   <img width="180" alt="The New session button with its dropdown in the top-right of the issue side panel" src="../images/step1-new-session-panel.png" />
+   <img width="180" alt="The New session button with its dropdown in the top-right of the issue side panel" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-new-session-panel.png?raw=true" />
 
 1. In the session, confirm Copilot can see the repository context (for example, ask it to summarize the README).
 
 > [!TIP]
 > Need these instructions again later? Open the session panel menu and select **Exercise: Idea to Merge with the Copilot App** to reopen issue **#1** in the side panel anytime.
 
-<img width="360" alt="Session panel menu listing the repository and the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="../images/step1-reopen-issue.png" />
+<img width="360" alt="Session panel menu listing the repository and the Exercise: Idea to Merge with the Copilot App issue to reopen it" src="https://github.com/arilivigni/skills-idea-to-merge-with-the-copilot-app/blob/main/.github/images/step1-reopen-issue.png?raw=true" />
 
 ### ⌨️ Activity 2: Create the app issue from a session
 
